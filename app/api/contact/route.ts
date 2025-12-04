@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+// Force the route to run in the Node.js runtime (Prisma is not Edge-compatible)
+export const runtime = 'nodejs';
 let prisma: any;
 type ContactPayload = {
   name?: string;
@@ -69,9 +71,20 @@ export async function POST(request: Request) {
   }
 
   // Lazy-import Prisma client so builds that analyze/compile routes don't
-  // attempt to connect to the database at build time.
+  // attempt to connect to the database at build time. Wrap import in
+  // try/catch so any import-time errors return a JSON error instead of
+  // an empty 500 response.
   if (!prisma) {
-    prisma = await import('@/lib/prisma').then((mod) => mod.default);
+    try {
+      const mod = await import('@/lib/prisma');
+      prisma = mod.default ?? (mod.prisma as any) ?? mod;
+    } catch (err) {
+      console.error('Failed to load Prisma client', err);
+      return NextResponse.json(
+        { error: 'Server error loading database client' },
+        { status: 500 }
+      );
+    }
   }
 
   try {
