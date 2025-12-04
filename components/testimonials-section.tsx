@@ -3,19 +3,38 @@
 import { useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 
+declare global {
+  interface Window {
+    Featurable?: {
+      load?: () => void;
+    };
+  }
+}
+
 export function TestimonialsSection() {
   useEffect(() => {
-    // Load Elfsight script if not already loaded
-    if (
-      !document.querySelector(
-        'script[src="https://elfsightcdn.com/platform.js"]'
-      )
-    ) {
-      const script = document.createElement('script');
-      script.src = 'https://elfsightcdn.com/platform.js';
-      script.async = true;
-      document.body.appendChild(script);
+    const scriptSrc =
+      'https://featurable.com/assets/v2/carousel_default.min.js';
+
+    const initializeWidget = () => {
+      window.Featurable?.load?.();
+    };
+
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      `script[src="${scriptSrc}"]`
+    );
+
+    if (existingScript) {
+      initializeWidget();
+      return;
     }
+
+    const script = document.createElement('script');
+    script.src = scriptSrc;
+    script.defer = true;
+    script.charset = 'UTF-8';
+    script.addEventListener('load', initializeWidget);
+    document.body.appendChild(script);
   }, []);
 
   return (
@@ -35,11 +54,12 @@ export function TestimonialsSection() {
           </p>
         </div>
 
-        {/* Elfsight Google Reviews Widget */}
+        {/* Featurable Google Reviews Widget */}
         <div className="flex justify-center">
           <div
-            className="elfsight-app-96546290-cc49-4e04-b7ff-5e3bf338bf5a"
-            data-elfsight-app-lazy
+            id="featurable-85191d66-197b-4a36-9884-d167f22aaceb"
+            data-featurable-async
+            className="w-full"
           />
         </div>
       </div>
