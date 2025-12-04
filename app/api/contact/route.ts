@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-
+let prisma: any;
 type ContactPayload = {
   name?: string;
   email?: string;
@@ -42,7 +41,6 @@ export async function POST(request: Request) {
       { status: 422 }
     );
   }
-
   if (message.length < 3) {
     return NextResponse.json(
       {
@@ -50,6 +48,30 @@ export async function POST(request: Request) {
       },
       { status: 422 }
     );
+  }
+  // Ensure MongoDB connection string is available and includes a database
+  const mongoUrl = process.env.MONGODB_URI;
+  if (!mongoUrl) {
+    return NextResponse.json(
+      { error: 'MONGODB_URI is not configured in the environment' },
+      { status: 500 }
+    );
+  }
+  // basic check for a database name in the connection string (after the host and slash)
+  const hasDbName = /mongodb(?:\+srv)?:\/\/[^/]+\/(.+)/.test(mongoUrl);
+  if (!hasDbName) {
+    return NextResponse.json(
+      {
+        error: 'MONGODB_URI must include a database name (e.g. /agni-bookshop)',
+      },
+      { status: 500 }
+    );
+  }
+
+  // Lazy-import Prisma client so builds that analyze/compile routes don't
+  // attempt to connect to the database at build time.
+  if (!prisma) {
+    prisma = await import('@/lib/prisma').then((mod) => mod.default);
   }
 
   try {
