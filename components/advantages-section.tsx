@@ -30,7 +30,7 @@ const advantages = [
   {
     icon: Clock,
     title: 'Convenient Hours',
-    description: 'Open 6 days a week with extended hours to serve you better.',
+    description: 'Open 7 days a week with extended hours to serve you better.',
   },
   {
     icon: Shield,
@@ -86,10 +86,14 @@ export function AdvantagesSection() {
         {/* Stats */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { value: '1000+', label: 'Happy Customers' },
-            { value: '9+', label: 'Services Offered' },
-            { value: 'Same Day', label: 'Most Services' },
-            { value: '6 Days', label: 'Weekly Service' },
+            { value: '7 Days', label: 'Weekly Service' },
+            {
+              value: 'Convenient Hours',
+              label:
+                'Open 7 days a week with extended hours to serve you better.',
+            },
+            { value: '25+', label: 'Services Offered' },
+            { value: '1000+', label: 'Products Available' },
           ].map((stat, index) => (
             <div key={index} className="text-center">
               <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
