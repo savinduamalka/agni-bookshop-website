@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import prisma from '../../../lib/prisma';
 // Force the route to run in the Node.js runtime (Prisma is not Edge-compatible)
 export const runtime = 'nodejs';
-let prisma: any;
 type ContactPayload = {
   name?: string;
   email?: string;
@@ -68,30 +68,6 @@ export async function POST(request: Request) {
       },
       { status: 500 }
     );
-  }
-
-  // Lazy-import Prisma client so builds that analyze/compile routes don't
-  // attempt to connect to the database at build time. Wrap import in
-  // try/catch so any import-time errors return a JSON error instead of
-  // an empty 500 response.
-  if (!prisma) {
-    try {
-      // Use a relative import path so the runtime doesn't depend on
-      // TS path aliases which may not be resolved the same way at runtime
-      // on Vercel. Relative path: from `app/api/contact/route.ts` to `lib/prisma`.
-      const mod = await import('../../../lib/prisma');
-      prisma = mod.default ?? (mod.prisma as any) ?? mod;
-    } catch (err: any) {
-      console.error(
-        'Failed to load Prisma client:',
-        err?.message ?? err,
-        err?.stack ?? 'no-stack'
-      );
-      return NextResponse.json(
-        { error: 'Server error loading database client' },
-        { status: 500 }
-      );
-    }
   }
 
   try {
