@@ -76,10 +76,17 @@ export async function POST(request: Request) {
   // an empty 500 response.
   if (!prisma) {
     try {
-      const mod = await import('@/lib/prisma');
+      // Use a relative import path so the runtime doesn't depend on
+      // TS path aliases which may not be resolved the same way at runtime
+      // on Vercel. Relative path: from `app/api/contact/route.ts` to `lib/prisma`.
+      const mod = await import('../../../lib/prisma');
       prisma = mod.default ?? (mod.prisma as any) ?? mod;
-    } catch (err) {
-      console.error('Failed to load Prisma client', err);
+    } catch (err: any) {
+      console.error(
+        'Failed to load Prisma client:',
+        err?.message ?? err,
+        err?.stack ?? 'no-stack'
+      );
       return NextResponse.json(
         { error: 'Server error loading database client' },
         { status: 500 }
@@ -108,8 +115,12 @@ export async function POST(request: Request) {
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Failed to save contact message', error);
+  } catch (error: any) {
+    console.error(
+      'Failed to save contact message:',
+      error?.message ?? error,
+      error?.stack ?? 'no-stack'
+    );
     return NextResponse.json(
       { error: 'Something went wrong. Please try again later.' },
       { status: 500 }
